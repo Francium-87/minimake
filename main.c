@@ -50,7 +50,7 @@ void str_split (char* line, char delimiter, char* part1, char* part2)
 
 int main (int argc, char** argv)
 {
-    FILE* f = fopen(argv[1], 'r');
+    FILE* f = fopen(argv[1], "r");
 
     if(f == NULL)
     {

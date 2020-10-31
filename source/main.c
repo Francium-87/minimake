@@ -30,8 +30,8 @@ void str_split (char* line, char delimiter, char* part1, char* part2)
     while (line[i] != delimiter)
         i++;
     
-    part1 = malloc(sizeof(char) * i);
-    part2 = malloc(sizeof(char) * (strlen(line) - i));
+    part1 = (char*)malloc(sizeof(char) * i);
+    part2 = (char*)malloc(sizeof(char) * (strlen(line) - i));
 
     for(int x = 0; x < strlen(line); x++)
     {
@@ -50,9 +50,19 @@ void str_split (char* line, char delimiter, char* part1, char* part2)
 
 int main (int argc, char** argv)
 {
+    char* line = "target:dependencies";
+    char delimiter = ':';
+    char* part1 = NULL;
+    char* part2 = NULL;
+    str_split(line,delimiter,part1,part2);
+    printf("line: %s\n\
+    delimiter:  %s\n\
+    part 1: %s\n\
+    part 2: %s\n", line, delimiter, part1, part2);
+    
     FILE* f = fopen(argv[1], "r");
 
-    if(f == NULL)
+    if (f == NULL)
     {
         fprintf(stderr, "[Minimake] Main: Failed to open file %s\n", argv[1]);
         return(EXIT_FAILURE);

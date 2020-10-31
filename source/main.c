@@ -23,41 +23,40 @@ struct node
     struct node* next;
 };
 
-void str_split (char* line, char delimiter, char* part1, char* part2)
+void str_split (char* line, int pos, char* part1, char* part2)
 {
-    // get the position of the delimiter
-    int i = 0;
-    while (line[i] != delimiter)
-        i++;
-    
-    // alloc the appropriate size
-    part1 = (char*)malloc(sizeof(char) * i);
-    part2 = (char*)malloc(sizeof(char) * (strlen(line) - i));
-
     for(int x = 0; x < strlen(line); x++)
     {
         // put everything before the delimiter and store it in part1
-        if (x < i)
+        if (x < pos)
         {
             part1[x] = line[x];
         }
         // put everything after the delimiter and store it in part2
-        else if (x > i)
+        else if (x > pos)
         {
-            part2[x-i] = line[x];
+            part2[x-pos] = line[x];
         }
     }
-    part1[i] = '\0';
-    part2[strlen(line) - i] = '\0';
+    part1[pos] = '\0';
+    part2[strlen(line) - pos] = '\0';
 }
 
 int main (int argc, char** argv)
 {
     char* line = "target:dependencies";
     char delimiter = ':';
-    char* part1 = NULL;
-    char* part2 = NULL;
-    str_split(line,delimiter,part1,part2);
+    
+    // get the position of the delimiter
+    int i = 0;
+    while (line[i] != delimiter)
+        i++;
+    
+    // alloc the appropriate size
+    char* part1 = (char*)malloc(sizeof(char) * i);
+    char* part2 = (char*)malloc(sizeof(char) * (strlen(line) - i));
+
+    str_split(line,i ,part1,part2);
     
     printf("line: %s\n\
     delimiter:  %c\n\

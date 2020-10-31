@@ -30,6 +30,7 @@ void str_split (char* line, char delimiter, char* part1, char* part2)
     while (line[i] != delimiter)
         i++;
     
+    // alloc the appropriate size
     part1 = (char*)malloc(sizeof(char) * i);
     part2 = (char*)malloc(sizeof(char) * (strlen(line) - i));
 
@@ -43,9 +44,11 @@ void str_split (char* line, char delimiter, char* part1, char* part2)
         // put everything after the delimiter and store it in part2
         else if (x > i)
         {
-            part2[strlen(line) - x] = line[x];
+            part2[x-i] = line[x];
         }
     }
+    part1[i] = '\0';
+    part2[strlen(line) - i] = '\0';
 }
 
 int main (int argc, char** argv)
@@ -55,8 +58,9 @@ int main (int argc, char** argv)
     char* part1 = NULL;
     char* part2 = NULL;
     str_split(line,delimiter,part1,part2);
+    
     printf("line: %s\n\
-    delimiter:  %s\n\
+    delimiter:  %c\n\
     part 1: %s\n\
     part 2: %s\n", line, delimiter, part1, part2);
     

@@ -23,7 +23,7 @@ struct node
     struct node* next;
 };
 
-void str_split (char* line, int pos, char* part1, char* part2)
+void str_split (const char* line, int pos, char* part1, char* part2)
 {
     for(int x = 0; x < strlen(line); x++)
     {
@@ -53,6 +53,22 @@ static char* get_delimiter (char* line)
     }
     // TODO RETURN QLQC POUR INDIQUER QUE C'EST UNE RECIPE
     return '\0';
+}
+
+struct rule parse_rule (const char* line) 
+{
+    int i = 0;
+    while (line[i] != ':')
+        i++;
+
+    char* part1 = (char*)malloc(sizeof(char) * i);
+    char* part2 = (char*)malloc(sizeof(char) * strlen(line) - i);
+    str_split(line, i, part1, part2);
+
+    struct rule ret;
+    ret.target = part1;
+    ret.dependencies = part2;
+    return ret;
 }
 
 int main (int argc, char** argv)
@@ -104,6 +120,8 @@ int main (int argc, char** argv)
             {
                 // TODO ON A AFFAIRE À UNE RECIPE
             }
+            // ON ADD LA STRUCT A UN NODE
+            // ON LINK LE NODE RECU AVEC LE RESTE
         }
     }
     return 0;

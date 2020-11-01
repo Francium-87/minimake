@@ -85,26 +85,6 @@ void* parse_line (const char* line, const char delimiter)
 
 int main(int argc, char *argv[])
 {
-    /* str_split usage
-    char* line = "target:dependencies";
-    char delimiter = ':';
-    
-    // get the position of the delimiter
-    int i = 0;
-    while (line[i] != delimiter)
-        i++;
-    
-    // alloc the appropriate size
-    char* part1 = (char*)malloc(sizeof(char) * i);
-    char* part2 = (char*)malloc(sizeof(char) * (strlen(line) - i));
-
-    str_split(line,i ,part1,part2);
-    
-    printf("line: %s\n\
-    delimiter:  %c\n\
-    part 1: %s\n\
-    part 2: %s\n", line, delimiter, part1, part2);
-    */
     FILE *f = fopen(argv[1], "r");
 
     if (f == NULL)

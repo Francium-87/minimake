@@ -43,7 +43,7 @@ void str_split (const char* line, int pos, char* part1, char* part2)
     part2[strlen(line) - pos] = '\0';
 }
 
-static char* get_delimiter (char* line) 
+static char get_delimiter (char* line) 
 {
     for(int i = 0; i < strlen(line); i++)
     {
@@ -121,10 +121,10 @@ int main (int argc, char** argv)
     size_t* len = 0;
     char** line = NULL;
 
-    while(geline(*line, len, f) != -1)
+    while(getline(line, len, f) != -1)
     {
-        if (line[0] != "\n"){
-            char* delimiter = get_delimiter(line);
+        if (*line[0] != '\n'){
+            char delimiter = get_delimiter(*line);
             // TODO TRAITEMENT EN FONCTION DU RETOUR DE L'APPEL A GET DELIMITER
             if (delimiter == ':')
             {

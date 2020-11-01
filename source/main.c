@@ -43,7 +43,7 @@ void str_split(const char *line, int pos, char *part1, char *part2)
     part2[strlen(line) - pos] = '\0';
 }
 
-static char get_delimiter(char *line)
+static char get_delimiter(const char *line)
 {
     for (int i = 0; i < strlen(line); i++)
     {
@@ -108,6 +108,50 @@ void *parse_line(const char *line, const char delimiter)
     }
 }
 
+struct node* get_new_node(const char *line, struct node* prev_node)
+{
+    struct node *ret = malloc(sizeof(struct node));
+    ret->next = NULL;
+    ret->prev = NULL;
+    ret->v = NULL;
+    ret->r = NULL;
+    
+    char delimiter = get_delimiter(line);
+    if (delimiter == ':')
+    {
+        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
+        struct rule *new_rule = parse_line(line, delimiter);
+        ret->r = new_rule;
+    }
+    else if (delimiter == '=')
+    {
+        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
+
+        if (!is_valid_var(line))
+        {
+            fprintf(stderr, "(ERROR)[Minimake] Main: Unexpected character in variable declaration \"%s\"\n", line);
+            return EXIT_FAILURE;
+        }
+
+        struct var *new_var = parse_line(line, delimiter);
+        ret->v = new_var;
+    }
+    else if (line[0] == '\t')
+    {
+        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
+
+        // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
+        if (!prev_node->r)
+        {
+            fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
+            return EXIT_FAILURE;
+        }
+        prev_node->r->recipe = line;
+        return prev_node;
+    }
+    return ret;
+}
+
 int main(int argc, char *argv[])
 {
     FILE *f = fopen(argv[1], "r");
@@ -125,44 +169,7 @@ int main(int argc, char *argv[])
     {
         if (line[0] != '\n')
         {
-            struct node *new_node = malloc(sizeof(struct node));
-            new_node->r = NULL;
-            new_node->v = NULL;
-
-            char delimiter = get_delimiter(line);
-            printf("(INFO)[Minimake] Main: \"%s\"\n", line);
-            if (delimiter == ':')
-            {
-                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
-                struct rule *new_rule = parse_line(line, delimiter);
-                new_node->r = new_rule;
-            }
-            else if (delimiter == '=')
-            {
-                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
-
-                if (!is_valid_var(line))
-                {
-                    fprintf(stderr, "(ERROR)[Minimake] Main: Unexpected character in variable declaration \"%s\"\n", line);
-                    return EXIT_FAILURE;
-                }
-
-                struct var *new_var = parse_line(line, delimiter);
-                new_node->v = new_var;
-            }
-            else if (line[0] == '\t')
-            {
-                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
-
-                // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
-                if (!prev_node->r)
-                {
-                    fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
-                    return EXIT_FAILURE;
-                }
-                prev_node->r->recipe = line;
-            }
-            // ON LINK LE NODE RECU AVEC LE RESTE
+            struct node* new_node = get_new_node(line, prev_node);
             new_node->prev = prev_node;
             prev_node->next = new_node;
             prev_node = new_node;

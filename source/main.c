@@ -7,7 +7,7 @@ struct rule
 {
     char *target;
     char *dependencies;
-    char *receipe;
+    char *recipe;
 };
 
 struct var
@@ -56,36 +56,31 @@ static char get_delimiter(char *line)
     return '\0';
 }
 
-struct rule parse_rule(const char *line)
+void* parse_line (const char* line, const char delimiter)
 {
     int i = 0;
-    while (line[i] != ':')
+    while (line[i] != delimiter)
         i++;
-
-    char *part1 = (char *)malloc(sizeof(char) * i);
-    char *part2 = (char *)malloc(sizeof(char) * strlen(line) - i);
+    
+    char *part1 = malloc(sizeof(char) * i);
+    char *part2 = malloc(sizeof(char) * strlen(line) - i);
     str_split(line, i, part1, part2);
 
-    struct rule ret;
-    ret.target = part1;
-    ret.dependencies = part2;
-    return ret;
-}
-
-struct var parse_var(const char *line)
-{
-    int i = 0;
-    while (line[i] != '=')
-        i++;
-
-    char *part1 = (char *)malloc(sizeof(char) * i);
-    char *part2 = (char *)malloc(sizeof(char) * strlen(line) - i);
-    str_split(line, i, part1, part2);
-
-    struct var ret;
-    ret.label = part1;
-    ret.value = part2;
-    return ret;
+    if (delimiter == ':')
+    {
+        struct rule *ret = malloc(sizeof(struct rule));
+        ret->target = part1;
+        ret->dependencies = part2;
+        ret->recipe = NULL;
+        return ret;
+    }
+    else
+    {
+        struct var *ret = malloc(sizeof(struct var));
+        ret->label = part1;
+        ret->value = part2;
+        return ret;
+    }
 }
 
 int main(int argc, char *argv[])

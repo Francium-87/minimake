@@ -18,8 +18,8 @@ struct var
 
 struct node
 {
-    struct rule r;
-    struct var v;
+    struct rule *r;
+    struct var *v;
     struct node *next;
     struct node *prev;
 };
@@ -113,35 +113,43 @@ int main(int argc, char *argv[])
         return (EXIT_FAILURE);
     }
 
-    size_t *len = 0;
-    char **line = NULL;
-    while (getline(line, len, f) != -1)
+    size_t len = 0;
+    char *line = NULL;
+    struct node *prev_node = malloc(sizeof(struct node));
+    while (getline(&line, &len, f) != -1)
     {
-        printf("%s\n", *line);
-        if (*line[0] != '\n')
+        if (line[0] != '\n')
         {
-            char delimiter = get_delimiter(*line);
-            printf("(INFO)[Minimake] Main: %s\n", *line);
+            struct node *new_node = malloc(sizeof(struct node));
+            char delimiter = get_delimiter(line);
+            printf("(INFO)[Minimake] Main: \"%s\"\n", line);
             // TODO TRAITEMENT EN FONCTION DU RETOUR DE L'APPEL A GET DELIMITER
             if (delimiter == ':')
             {
-                printf("(DEBUG)[Minimake] Main: parsing %s as rule\n", *line);
+                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
                 // TODO PARSING D'UNE TARGET
+                struct rule *new_rule = parse_line(line, delimiter);
+                new_node->r = new_rule;
             }
             else if (delimiter == '=')
             {
                 // TODO PARSING D'UNE VARIABLE
-                printf("(DEBUG)[Minimake] Main: parsing %s as variable\n", *line);
+                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
+                struct var *new_var = parse_line(line, delimiter);
+                new_node->v = new_var;
             }
             else
             {
-                printf("(DEBUG)[Minimake] Main: parsing %s as recipe\n", *line);
+                printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
                 // TODO ON A AFFAIRE À UNE RECIPE
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
             }
-            // ON ADD LA STRUCT A UN NODE
             // ON LINK LE NODE RECU AVEC LE RESTE
+            new_node->prev = prev_node;
+            prev_node->next = new_node;
+            prev_node = new_node;
         }
     }
+    printf("(DEBUG)[Minimake]: EOF\n");
     return 0;
 }

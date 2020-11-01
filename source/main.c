@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
                 if (!prev_node->r)
                 {
-                    fprintf(strerror, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
+                    fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
                     return EXIT_FAILURE;
                 }
                 prev_node->r->recipe = line;

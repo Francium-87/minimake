@@ -56,12 +56,37 @@ static char get_delimiter(char *line)
     return '\0';
 }
 
-void* parse_line (const char* line, const char delimiter)
+static int is_valid_var(const char *line)
+{
+    for (size_t i = 0; i < (strlen(line)); i++)
+    {
+        switch (line[i])
+        {
+        case ':':
+            return -1;
+            break;
+        case '=':
+            return -1;
+            break;
+        case '#':
+            return -1;
+            break;
+        case ' ':
+            return -1;
+            break;
+        default:
+            break;
+        }
+    }
+    return 0;
+}
+
+void *parse_line(const char *line, const char delimiter)
 {
     int i = 0;
     while (line[i] != delimiter)
         i++;
-    
+
     char *part1 = malloc(sizeof(char) * i);
     char *part2 = malloc(sizeof(char) * strlen(line) - i);
     str_split(line, i, part1, part2);
@@ -115,12 +140,20 @@ int main(int argc, char *argv[])
             else if (delimiter == '=')
             {
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
+
+                if (!is_valid_var(line))
+                {
+                    fprintf(stderr, "(ERROR)[Minimake] Main: Unexpected character in variable declaration \"%s\"\n", line);
+                    return EXIT_FAILURE;
+                }
+
                 struct var *new_var = parse_line(line, delimiter);
                 new_node->v = new_var;
             }
-            else if (line[0] == '\r')
+            else if (line[0] == '\t')
             {
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
+
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
                 if (!prev_node->r)
                 {

@@ -3,30 +3,30 @@
 #include <string.h>
 #include <malloc.h>
 
-struct rule 
+struct rule
 {
-    char* target;
-    char* dependencies;
-    char* receipe;
+    char *target;
+    char *dependencies;
+    char *receipe;
 };
 
-struct var 
+struct var
 {
-    char* label;
-    char* value;
+    char *label;
+    char *value;
 };
 
-struct node 
+struct node
 {
     struct rule r;
     struct var v;
-    struct node* next;
-    struct node* prev;
+    struct node *next;
+    struct node *prev;
 };
 
-void str_split (const char* line, int pos, char* part1, char* part2)
+void str_split(const char *line, int pos, char *part1, char *part2)
 {
-    for(int x = 0; x < strlen(line); x++)
+    for (int x = 0; x < strlen(line); x++)
     {
         // put everything before the delimiter and store it in part1
         if (x < pos)
@@ -36,16 +36,16 @@ void str_split (const char* line, int pos, char* part1, char* part2)
         // put everything after the delimiter and store it in part2
         else if (x > pos)
         {
-            part2[x-pos] = line[x];
+            part2[x - pos] = line[x];
         }
     }
     part1[pos] = '\0';
     part2[strlen(line) - pos] = '\0';
 }
 
-static char get_delimiter (char* line) 
+static char get_delimiter(char *line)
 {
-    for(int i = 0; i < strlen(line); i++)
+    for (int i = 0; i < strlen(line); i++)
     {
         if (line[i] == ':')
             return line[i];
@@ -56,14 +56,14 @@ static char get_delimiter (char* line)
     return '\0';
 }
 
-struct rule parse_rule (const char* line) 
+struct rule parse_rule(const char *line)
 {
     int i = 0;
     while (line[i] != ':')
         i++;
 
-    char* part1 = (char*)malloc(sizeof(char) * i);
-    char* part2 = (char*)malloc(sizeof(char) * strlen(line) - i);
+    char *part1 = (char *)malloc(sizeof(char) * i);
+    char *part2 = (char *)malloc(sizeof(char) * strlen(line) - i);
     str_split(line, i, part1, part2);
 
     struct rule ret;
@@ -72,14 +72,14 @@ struct rule parse_rule (const char* line)
     return ret;
 }
 
-struct var parse_var (const char* line)
+struct var parse_var(const char *line)
 {
     int i = 0;
     while (line[i] != '=')
         i++;
-    
-    char* part1 = (char*)malloc(sizeof(char) * i);
-    char* part2 = (char*)malloc(sizeof(char) * strlen(line) - i);
+
+    char *part1 = (char *)malloc(sizeof(char) * i);
+    char *part2 = (char *)malloc(sizeof(char) * strlen(line) - i);
     str_split(line, i, part1, part2);
 
     struct var ret;
@@ -88,8 +88,8 @@ struct var parse_var (const char* line)
     return ret;
 }
 
-int main (int argc, char** argv)
-{   
+int main(int argc, char *argv[])
+{
     /* str_split usage
     char* line = "target:dependencies";
     char delimiter = ':';
@@ -110,31 +110,37 @@ int main (int argc, char** argv)
     part 1: %s\n\
     part 2: %s\n", line, delimiter, part1, part2);
     */
-    FILE* f = fopen(argv[1], "r");
+    FILE *f = fopen(argv[1], "r");
 
     if (f == NULL)
     {
-        fprintf(stderr, "[Minimake] Main: Failed to open file %s\n", argv[1]);
-        return(EXIT_FAILURE);
+        fprintf(stderr, "(ERROR)[Minimake] Main: Failed to open file %s\n", argv[1]);
+        return (EXIT_FAILURE);
     }
 
-    size_t* len = 0;
-    char** line = NULL;
-
-    while(getline(line, len, f) != -1)
+    size_t *len = 0;
+    char **line = NULL;
+    while (getline(line, len, f) != -1)
     {
-        if (*line[0] != '\n'){
+        printf("%s\n", *line);
+        if (*line[0] != '\n')
+        {
             char delimiter = get_delimiter(*line);
+            printf("(INFO)[Minimake] Main: %s\n", *line);
             // TODO TRAITEMENT EN FONCTION DU RETOUR DE L'APPEL A GET DELIMITER
             if (delimiter == ':')
             {
+                printf("(DEBUG)[Minimake] Main: parsing %s as rule\n", *line);
                 // TODO PARSING D'UNE TARGET
             }
-            else if (delimiter == '='){
+            else if (delimiter == '=')
+            {
                 // TODO PARSING D'UNE VARIABLE
+                printf("(DEBUG)[Minimake] Main: parsing %s as variable\n", *line);
             }
             else
             {
+                printf("(DEBUG)[Minimake] Main: parsing %s as recipe\n", *line);
                 // TODO ON A AFFAIRE À UNE RECIPE
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
             }

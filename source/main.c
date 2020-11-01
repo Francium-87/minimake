@@ -71,6 +71,22 @@ struct rule parse_rule (const char* line)
     return ret;
 }
 
+struct var parse_var (const char* line)
+{
+    int i = 0;
+    while (line[i] != '=')
+        i++;
+    
+    char* part1 = (char*)malloc(sizeof(char) * i);
+    char* part2 = (char*)malloc(sizeof(char) * strlen(line) - i);
+    str_split(line, i, part1, part2);
+
+    struct var ret;
+    ret.label = part1;
+    ret.value = part2;
+    return ret;
+}
+
 int main (int argc, char** argv)
 {   
     /* str_split usage
@@ -119,6 +135,7 @@ int main (int argc, char** argv)
             else
             {
                 // TODO ON A AFFAIRE À UNE RECIPE
+                // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
             }
             // ON ADD LA STRUCT A UN NODE
             // ON LINK LE NODE RECU AVEC LE RESTE

@@ -121,19 +121,19 @@ int main(int argc, char *argv[])
         if (line[0] != '\n')
         {
             struct node *new_node = malloc(sizeof(struct node));
+            new_node->r = NULL;
+            new_node->v = NULL;
+
             char delimiter = get_delimiter(line);
             printf("(INFO)[Minimake] Main: \"%s\"\n", line);
-            // TODO TRAITEMENT EN FONCTION DU RETOUR DE L'APPEL A GET DELIMITER
             if (delimiter == ':')
             {
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
-                // TODO PARSING D'UNE TARGET
                 struct rule *new_rule = parse_line(line, delimiter);
                 new_node->r = new_rule;
             }
             else if (delimiter == '=')
             {
-                // TODO PARSING D'UNE VARIABLE
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
                 struct var *new_var = parse_line(line, delimiter);
                 new_node->v = new_var;
@@ -141,8 +141,13 @@ int main(int argc, char *argv[])
             else
             {
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
-                // TODO ON A AFFAIRE À UNE RECIPE
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
+                if (!prev_node->r)
+                {
+                    fprintf(strerror, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
+                    return EXIT_FAILURE;
+                }
+                prev_node->r->recipe = line;
             }
             // ON LINK LE NODE RECU AVEC LE RESTE
             new_node->prev = prev_node;

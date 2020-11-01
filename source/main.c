@@ -42,8 +42,22 @@ void str_split (char* line, int pos, char* part1, char* part2)
     part2[strlen(line) - pos] = '\0';
 }
 
-int main (int argc, char** argv)
+static char* get_delimiter (char* line) 
 {
+    for(int i = 0; i < strlen(line); i++)
+    {
+        if (line[i] == ':')
+            return line[i];
+        else if (line[i] == '=')
+            return line[i];
+    }
+    // TODO RETURN QLQC POUR INDIQUER QUE C'EST UNE RECIPE
+    return '\0';
+}
+
+int main (int argc, char** argv)
+{   
+    /* str_split usage
     char* line = "target:dependencies";
     char delimiter = ':';
     
@@ -62,13 +76,35 @@ int main (int argc, char** argv)
     delimiter:  %c\n\
     part 1: %s\n\
     part 2: %s\n", line, delimiter, part1, part2);
-    
+    */
     FILE* f = fopen(argv[1], "r");
 
     if (f == NULL)
     {
         fprintf(stderr, "[Minimake] Main: Failed to open file %s\n", argv[1]);
         return(EXIT_FAILURE);
+    }
+
+    size_t* len = 0;
+    char** line = NULL;
+
+    while(geline(*line, len, f) != -1)
+    {
+        if (line[0] != "\n"){
+            char* delimiter = get_delimiter(line);
+            // TODO TRAITEMENT EN FONCTION DU RETOUR DE L'APPEL A GET DELIMITER
+            if (delimiter == ':')
+            {
+                // TODO PARSING D'UNE TARGET
+            }
+            else if (delimiter == '='){
+                // TODO PARSING D'UNE VARIABLE
+            }
+            else
+            {
+                // TODO ON A AFFAIRE À UNE RECIPE
+            }
+        }
     }
     return 0;
 }

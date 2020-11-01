@@ -3,178 +3,155 @@
 #include <string.h>
 #include <malloc.h>
 
-struct rule
-{
-    char *target;
-    char *dependencies;
-    char *recipe;
+struct rule {
+  char *target;
+  char *dependencies;
+  char *recipe;
 };
 
-struct var
-{
-    char *label;
-    char *value;
+struct var {
+  char *label;
+  char *value;
 };
 
-struct node
-{
-    struct rule *r;
-    struct var *v;
-    struct node *next;
-    struct node *prev;
+struct node {
+  struct rule *r;
+  struct var *v;
+  struct node *next;
+  struct node *prev;
 };
 
-void str_split(const char *line, int pos, char *part1, char *part2)
-{
-    for (int x = 0; x < strlen(line); x++)
-    {
-        // put everything before the delimiter and store it in part1
-        if (x < pos)
-        {
-            part1[x] = line[x];
-        }
-        // put everything after the delimiter and store it in part2
-        else if (x > pos)
-        {
-            part2[x - pos] = line[x];
-        }
+void str_split(const char *line, int pos, char *part1, char *part2) {
+  for (int x = 0; x < strlen(line); x++) {
+    // put everything before the delimiter and store it in part1
+    if (x < pos) {
+      part1[x] = line[x];
     }
-    part1[pos] = '\0';
-    part2[strlen(line) - pos] = '\0';
+    // put everything after the delimiter and store it in part2
+    else if (x > pos) {
+      part2[x - pos] = line[x];
+    }
+  }
+  part1[pos] = '\0';
+  part2[strlen(line) - pos] = '\0';
 }
 
-static char get_delimiter(const char *line)
-{
-    for (int i = 0; i < strlen(line); i++)
-    {
-        if (line[i] == ':')
-            return line[i];
-        else if (line[i] == '=')
-            return line[i];
-    }
-    // TODO RETURN QLQC POUR INDIQUER QUE C'EST UNE RECIPE
-    return '\0';
+static char get_delimiter(const char *line) {
+  for (int i = 0; i < strlen(line); i++) {
+    if (line[i] == ':')
+      return line[i];
+    else if (line[i] == '=')
+      return line[i];
+  }
+  // TODO RETURN QLQC POUR INDIQUER QUE C'EST UNE RECIPE
+  return '\0';
 }
 
-static int is_valid_var(const char *line)
-{
-    for (size_t i = 0; i < (strlen(line)); i++)
-    {
-        switch (line[i])
-        {
-        case ':':
-            return -1;
-            break;
-        case '=':
-            return -1;
-            break;
-        case '#':
-            return -1;
-            break;
-        case ' ':
-            return -1;
-            break;
-        default:
-            break;
-        }
+static int is_valid_var(const char *line) {
+  for (size_t i = 0; i < (strlen(line)); i++) {
+    switch (line[i]) {
+    case ':':
+      return -1;
+      break;
+    case '=':
+      return -1;
+      break;
+    case '#':
+      return -1;
+      break;
+    case ' ':
+      return -1;
+      break;
+    default:
+      break;
     }
-    return 0;
+  }
+  return 0;
 }
 
-void *parse_line(const char *line, const char delimiter)
-{
-    int i = 0;
-    while (line[i] != delimiter)
-        i++;
+void *parse_line(const char *line, const char delimiter) {
+  int i = 0;
+  while (line[i] != delimiter)
+    i++;
 
-    char *part1 = malloc(sizeof(char) * i);
-    char *part2 = malloc(sizeof(char) * strlen(line) - i);
-    str_split(line, i, part1, part2);
+  char *part1 = malloc(sizeof(char) * i);
+  char *part2 = malloc(sizeof(char) * strlen(line) - i);
+  str_split(line, i, part1, part2);
 
-    if (delimiter == ':')
-    {
-        struct rule *ret = malloc(sizeof(struct rule));
-        ret->target = part1;
-        ret->dependencies = part2;
-        ret->recipe = NULL;
-        return ret;
-    }
-    else
-    {
-        struct var *ret = malloc(sizeof(struct var));
-        ret->label = part1;
-        ret->value = part2;
-        return ret;
-    }
-}
-
-struct node* get_new_node(const char *line, struct node* prev_node)
-{
-    struct node *ret = malloc(sizeof(struct node));
-    ret->next = NULL;
-    ret->prev = NULL;
-    ret->v = NULL;
-    ret->r = NULL;
-    
-    char delimiter = get_delimiter(line);
-    if (delimiter == ':')
-    {
-        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
-        struct rule *new_rule = parse_line(line, delimiter);
-        ret->r = new_rule;
-    }
-    else if (delimiter == '=')
-    {
-        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
-
-        if (!is_valid_var(line))
-        {
-            fprintf(stderr, "(ERROR)[Minimake] Main: Unexpected character in variable declaration \"%s\"\n", line);
-            return EXIT_FAILURE;
-        }
-
-        struct var *new_var = parse_line(line, delimiter);
-        ret->v = new_var;
-    }
-    else if (line[0] == '\t')
-    {
-        printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
-
-        // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
-        if (!prev_node->r)
-        {
-            fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and dependencies for \"%s\"", line);
-            return EXIT_FAILURE;
-        }
-        prev_node->r->recipe = line;
-        return prev_node;
-    }
+  if (delimiter == ':') {
+    struct rule *ret = malloc(sizeof(struct rule));
+    ret->target = part1;
+    ret->dependencies = part2;
+    ret->recipe = NULL;
     return ret;
+  } else {
+    struct var *ret = malloc(sizeof(struct var));
+    ret->label = part1;
+    ret->value = part2;
+    return ret;
+  }
 }
 
-int main(int argc, char *argv[])
-{
-    FILE *f = fopen(argv[1], "r");
+struct node *get_new_node(const char *line, struct node *prev_node) {
+  struct node *ret = malloc(sizeof(struct node));
+  ret->next = NULL;
+  ret->prev = NULL;
+  ret->v = NULL;
+  ret->r = NULL;
 
-    if (f == NULL)
-    {
-        fprintf(stderr, "(ERROR)[Minimake] Main: Failed to open file %s\n", argv[1]);
-        return (EXIT_FAILURE);
+  char delimiter = get_delimiter(line);
+  if (delimiter == ':') {
+    printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
+    struct rule *new_rule = parse_line(line, delimiter);
+    ret->r = new_rule;
+  } else if (delimiter == '=') {
+    printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
+
+    if (!is_valid_var(line)) {
+      fprintf(stderr, "(ERROR)[Minimake] Main: Unexpected character in "
+                      "variable declaration \"%s\"\n",
+              line);
+      return EXIT_FAILURE;
     }
 
-    size_t len = 0;
-    char *line = NULL;
-    struct node *prev_node = malloc(sizeof(struct node));
-    while (getline(&line, &len, f) != -1)
-    {
-        if (line[0] != '\n')
-        {
-            struct node* new_node = get_new_node(line, prev_node);
-            new_node->prev = prev_node;
-            prev_node->next = new_node;
-            prev_node = new_node;
-        }
+    struct var *new_var = parse_line(line, delimiter);
+    ret->v = new_var;
+  } else if (line[0] == '\t') {
+    printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
+
+    // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
+    if (!prev_node->r) {
+      fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and "
+                      "dependencies for \"%s\"",
+              line);
+      return EXIT_FAILURE;
     }
-    printf("(DEBUG)[Minimake]: EOF\n");
-    return 0;
+    prev_node->r->recipe = line;
+    return prev_node;
+  }
+  return ret;
+}
+
+int main(int argc, char *argv[]) {
+  FILE *f = fopen(argv[1], "r");
+
+  if (f == NULL) {
+    fprintf(stderr, "(ERROR)[Minimake] Main: Failed to open file %s\n",
+            argv[1]);
+    return (EXIT_FAILURE);
+  }
+
+  size_t len = 0;
+  char *line = NULL;
+  struct node *prev_node = malloc(sizeof(struct node));
+  while (getline(&line, &len, f) != -1) {
+    if (line[0] != '\n') {
+      struct node *new_node = get_new_node(line, prev_node);
+      new_node->prev = prev_node;
+      prev_node->next = new_node;
+      prev_node = new_node;
+    }
+  }
+  printf("(DEBUG)[Minimake]: EOF\n");
+  return 0;
 }

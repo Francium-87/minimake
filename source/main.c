@@ -21,6 +21,7 @@ struct node
     struct rule r;
     struct var v;
     struct node* next;
+    struct node* prev;
 };
 
 void str_split (const char* line, int pos, char* part1, char* part2)

@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
                 struct var *new_var = parse_line(line, delimiter);
                 new_node->v = new_var;
             }
-            else
+            else if (line[0] == '\r')
             {
                 printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
                 // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE

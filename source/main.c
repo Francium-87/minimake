@@ -72,11 +72,12 @@ void str_split(const char *line, int pos, char *part1, char *part2) {
     }
     // put everything after the delimiter and store it in part2
     else if (x > pos) {
-      part2[x - pos] = line[x];
+      part2[x - (pos + 1)] = line[x];
     }
   }
+
   part1[pos] = '\0';
-  part2[strlen(line) - pos] = '\0';
+  part2[strlen(line) - (pos + 1)] = '\0';
 }
 
 void *parse_line(const char *line, const char delimiter) {

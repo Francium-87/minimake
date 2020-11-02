@@ -21,19 +21,15 @@ struct node {
   struct node *prev;
 };
 
-void str_split(const char *line, int pos, char *part1, char *part2) {
-  for (int x = 0; x < strlen(line); x++) {
-    // put everything before the delimiter and store it in part1
-    if (x < pos) {
-      part1[x] = line[x];
-    }
-    // put everything after the delimiter and store it in part2
-    else if (x > pos) {
-      part2[x - pos] = line[x];
-    }
+static const void node_pretty_print(const struct node *n) {
+  if (n->r) {
+    printf("Target: \"%s\"\n", n->r->target);
+    printf("Dependencies: \"%s\"\n", n->r->dependencies);
+    printf("Rule: \"%s\"\n", n->r->recipe);
+  } else if (n->v) {
+    printf("Label: \"%s\"\n", n->v->label);
+    printf("Value: \"%s\"\n", n->v->value);
   }
-  part1[pos] = '\0';
-  part2[strlen(line) - pos] = '\0';
 }
 
 static char get_delimiter(const char *line) {
@@ -43,7 +39,7 @@ static char get_delimiter(const char *line) {
     else if (line[i] == '=')
       return line[i];
   }
-  // TODO RETURN QLQC POUR INDIQUER QUE C'EST UNE RECIPE
+
   return '\0';
 }
 
@@ -67,6 +63,21 @@ static int is_valid_var(const char *line) {
     }
   }
   return 0;
+}
+
+void str_split(const char *line, int pos, char *part1, char *part2) {
+  for (int x = 0; x < strlen(line); x++) {
+    // put everything before the delimiter and store it in part1
+    if (x < pos) {
+      part1[x] = line[x];
+    }
+    // put everything after the delimiter and store it in part2
+    else if (x > pos) {
+      part2[x - pos] = line[x];
+    }
+  }
+  part1[pos] = '\0';
+  part2[strlen(line) - pos] = '\0';
 }
 
 void *parse_line(const char *line, const char delimiter) {
@@ -93,7 +104,7 @@ void *parse_line(const char *line, const char delimiter) {
 }
 
 int get_new_node(const char *line, struct node *prev_node,
-                  struct node *new_node) {
+                 struct node *new_node) {
 
   new_node->next = NULL;
   new_node->prev = NULL;
@@ -122,7 +133,6 @@ int get_new_node(const char *line, struct node *prev_node,
   } else if (line[0] == '\t') {
     printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
 
-    // ON PREND LA NODE D'AVANT ET ON MODIFIE SA RULE POUR Y AJOUTER LA RECIPE
     if (!prev_node->r) {
       fprintf(stderr, "(ERROR)[Minimake] Syntaxe error: no target and "
                       "dependencies for \"%s\"",
@@ -160,13 +170,10 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("(DEBUG)[Minimake]: EOF\n");
-
+  node_pretty_print(prev_node);
   while (!prev_node->prev) {
-    if (prev_node->r)
-      printf("%s:%s\n%s\n", prev_node->r->target, prev_node->r->target,
-             prev_node->r->recipe);
-    else if (prev_node->v)
-      printf("%s=%s\n", prev_node->v->label, prev_node->v->value);
+    node_pretty_print(prev_node);
+    prev_node = prev_node->prev;
   }
 
   return 0;

@@ -92,18 +92,20 @@ void *parse_line(const char *line, const char delimiter) {
   }
 }
 
-struct node *get_new_node(const char *line, struct node *prev_node) {
-  struct node *ret = malloc(sizeof(struct node));
-  ret->next = NULL;
-  ret->prev = NULL;
-  ret->v = NULL;
-  ret->r = NULL;
+int get_new_node(const char *line, struct node *prev_node,
+                  struct node *new_node) {
+
+  new_node->next = NULL;
+  new_node->prev = NULL;
+  new_node->v = NULL;
+  new_node->r = NULL;
 
   char delimiter = get_delimiter(line);
   if (delimiter == ':') {
     printf("(DEBUG)[Minimake] Main: parsing \"%s\" as rule\n", line);
     struct rule *new_rule = parse_line(line, delimiter);
-    ret->r = new_rule;
+    new_node->r = new_rule;
+    return 0;
   } else if (delimiter == '=') {
     printf("(DEBUG)[Minimake] Main: parsing \"%s\" as variable\n", line);
 
@@ -115,7 +117,8 @@ struct node *get_new_node(const char *line, struct node *prev_node) {
     }
 
     struct var *new_var = parse_line(line, delimiter);
-    ret->v = new_var;
+    new_node->v = new_var;
+    return 0;
   } else if (line[0] == '\t') {
     printf("(DEBUG)[Minimake] Main: parsing \"%s\" as recipe\n", line);
 
@@ -126,10 +129,9 @@ struct node *get_new_node(const char *line, struct node *prev_node) {
               line);
       return EXIT_FAILURE;
     }
-    prev_node->r->recipe = line;
-    return prev_node;
+    prev_node->r->recipe = strdup(line);
+    return 0;
   }
-  return ret;
 }
 
 int main(int argc, char *argv[]) {
@@ -144,14 +146,28 @@ int main(int argc, char *argv[]) {
   size_t len = 0;
   char *line = NULL;
   struct node *prev_node = malloc(sizeof(struct node));
+  prev_node->next = NULL;
+  prev_node->prev = NULL;
+  prev_node->r = NULL;
+  prev_node->v = NULL;
   while (getline(&line, &len, f) != -1) {
     if (line[0] != '\n') {
-      struct node *new_node = get_new_node(line, prev_node);
+      struct node *new_node = malloc(sizeof(struct node));
+      get_new_node(line, prev_node, new_node);
       new_node->prev = prev_node;
       prev_node->next = new_node;
       prev_node = new_node;
     }
   }
   printf("(DEBUG)[Minimake]: EOF\n");
+
+  while (!prev_node->prev) {
+    if (prev_node->r)
+      printf("%s:%s\n%s\n", prev_node->r->target, prev_node->r->target,
+             prev_node->r->recipe);
+    else if (prev_node->v)
+      printf("%s=%s\n", prev_node->v->label, prev_node->v->value);
+  }
+
   return 0;
 }

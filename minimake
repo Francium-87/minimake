@@ -2,3 +2,9 @@ target:dependencies
     recipe
     
 label=value
+
+target2:dependencies
+    recipe1
+    recipe1
+
+label2=value
